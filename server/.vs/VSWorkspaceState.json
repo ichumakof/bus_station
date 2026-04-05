@@ -1,0 +1,11 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\BusStation.API",
+    "\\BusStation.API\\Exceptions",
+    "\\BusStation.API\\Models",
+    "\\BusStation.API\\Services"
+  ],
+  "SelectedNode": "\\BusStation.API\\Models\\ApplicationUser.cs",
+  "PreviewInSolutionExplorer": false
+}
