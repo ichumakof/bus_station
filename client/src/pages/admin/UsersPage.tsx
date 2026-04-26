@@ -17,6 +17,7 @@ import type { FormInstance } from 'antd';
 import { ApiError } from '../../api/client';
 import { usersApi } from '../../api/users';
 import type { CreateUserRequest, UserResponse } from '../../api/users';
+import { useAuth } from '../../contexts/AuthContext';
 import PageEmpty from '../../components/PageEmpty';
 import PageError from '../../components/PageError';
 import PageLoading from '../../components/PageLoading';
@@ -24,6 +25,7 @@ import PageLoading from '../../components/PageLoading';
 const roles = ['Customer', 'Operator', 'Admin'] as const;
 
 export default function UsersPage() {
+  const { user } = useAuth();
   const queryClient = useQueryClient();
   const [messageApi, contextHolder] = message.useMessage();
   const [localRoles, setLocalRoles] = useState<Record<string, string>>({});
@@ -126,6 +128,11 @@ export default function UsersPage() {
       width: 140,
       render: (_, record) => {
         const pending = deleteMutation.isPending && deleteMutation.variables === record.id;
+        const isCurrentUser = user?.id === record.id;
+
+        if (isCurrentUser) {
+          return <Typography.Text type="secondary">Текущий пользователь</Typography.Text>;
+        }
 
         return (
           <Popconfirm

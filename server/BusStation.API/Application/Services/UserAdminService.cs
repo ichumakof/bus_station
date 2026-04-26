@@ -108,6 +108,18 @@ public class UserAdminService : IUserAdminService
         var user = await _userManager.FindByIdAsync(userId)
             ?? throw new NotFoundException("Пользователь не найден.");
 
+        var currentRoles = await _userManager.GetRolesAsync(user);
+        if (currentRoles.Contains("Admin"))
+        {
+            var adminCount = await CountAdminsAsync();
+            if (adminCount <= 1)
+            {
+                throw new BusinessException("Нельзя удалить последнего администратора.");
+            }
+        }
+
+        await using var transaction = await _db.Database.BeginTransactionAsync();
+
         var tickets = await _db.Tickets
             .Where(ticket => ticket.UserId == userId)
             .ToListAsync();
@@ -139,11 +151,38 @@ public class UserAdminService : IUserAdminService
             await _db.SaveChangesAsync();
         }
 
+        if (currentRoles.Count > 0)
+        {
+            var removeRolesResult = await _userManager.RemoveFromRolesAsync(user, currentRoles);
+            if (!removeRolesResult.Succeeded)
+            {
+                throw new BusinessException(string.Join("; ", removeRolesResult.Errors.Select(error => error.Description)));
+            }
+        }
+
         var deleteResult = await _userManager.DeleteAsync(user);
         if (!deleteResult.Succeeded)
         {
             throw new BusinessException(string.Join("; ", deleteResult.Errors.Select(error => error.Description)));
         }
+
+        await transaction.CommitAsync();
+    }
+
+    private async Task<int> CountAdminsAsync()
+    {
+        var users = await _userManager.Users.ToListAsync();
+        var count = 0;
+
+        foreach (var user in users)
+        {
+            if (await _userManager.IsInRoleAsync(user, "Admin"))
+            {
+                count++;
+            }
+        }
+
+        return count;
     }
 
     private static string NormalizeRole(string role)
