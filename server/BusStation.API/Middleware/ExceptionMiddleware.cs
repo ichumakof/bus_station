@@ -33,6 +33,9 @@ public class ExceptionMiddleware
         {
             BusinessException => (HttpStatusCode.BadRequest, "Bad Request"),
             UnauthorizedException => (HttpStatusCode.Unauthorized, "Unauthorized"),
+            ForbiddenException => (HttpStatusCode.Forbidden, "Forbidden"),
+            NotFoundException => (HttpStatusCode.NotFound, "Not Found"),
+            ConflictException => (HttpStatusCode.Conflict, "Conflict"),
             _ => (HttpStatusCode.InternalServerError, "Internal Server Error")
         };
 

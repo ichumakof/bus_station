@@ -7,10 +7,10 @@ export default function ForbiddenPage() {
     <Result
       status="403"
       title="403"
-      subTitle="You do not have permission to access this page."
+      subTitle="У вас нет доступа к этой странице."
       extra={
         <Button type="primary" onClick={() => navigate(-1)}>
-          Go Back
+          Назад
         </Button>
       }
     />

@@ -1,4 +1,4 @@
-const BASE_URL = 'http://localhost:5051';
+const BASE_URL = import.meta.env.VITE_API_BASE_URL ?? 'http://localhost:5051';
 
 interface ProblemDetails {
   title?: string;
@@ -36,7 +36,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       const problem: ProblemDetails = await response.json();
       message = problem.detail ?? problem.title ?? message;
     } catch {
-      // ignore JSON parse errors — keep default message
+      // keep default message when response body is not JSON
     }
     throw new ApiError(response.status, message);
   }
@@ -44,6 +44,20 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   if (response.status === 204) return undefined as T;
 
   return response.json() as Promise<T>;
+}
+
+/** Собирает query string без пустых значений. */
+export function buildQuery(params: object): string {
+  const qs = new URLSearchParams();
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value !== undefined && value !== null && value !== '') {
+      qs.set(key, String(value));
+    }
+  }
+
+  const value = qs.toString();
+  return value ? `?${value}` : '';
 }
 
 export const apiClient = {

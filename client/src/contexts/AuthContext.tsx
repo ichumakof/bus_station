@@ -1,79 +1,119 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { apiClient } from '../api/client';
+import { createContext, useContext, useEffect, useState } from 'react';
+import type { ReactNode } from 'react';
+import { apiClient, ApiError } from '../api/client';
+import PageLoading from '../components/PageLoading';
+
 export type Role = 'Customer' | 'Operator' | 'Admin';
-export interface AuthUser { id: string; email: string; displayName: string; }
+
+export interface AuthUser {
+  id: string;
+  email: string;
+  displayName: string;
+}
+
+interface MeResponse {
+  id: string;
+  email: string;
+  displayName: string;
+  role: Role;
+}
+
+interface TokenResponse {
+  accessToken: string;
+}
 
 interface AuthContextValue {
   user: AuthUser | null;
   role: Role | null;
   isAuthenticated: boolean;
-  login: (token: string) => Promise<void>; // Теперь возвращает Promise
-  logout: () => void;
-  register: (displayName: string, email: string, password: string) => Promise<void>;
+  login(email: string, password: string): Promise<void>;
+  register(displayName: string, email: string, password: string): Promise<void>;
+  logout(): void;
+  init(): Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [token, setToken] = useState<string | null>(() => localStorage.getItem('token'));
   const [user, setUser] = useState<AuthUser | null>(null);
   const [role, setRole] = useState<Role | null>(null);
+  const [isInitialized, setIsInitialized] = useState(false);
 
-  const init = async () => {
-    try {
-      const data = await apiClient.get<any>('/api/auth/me');
+  const logout = () => {
+    localStorage.removeItem('token');
+    setUser(null);
+    setRole(null);
+  };
 
-      setUser({ id: data.id, email: data.email, displayName: data.displayName });
-      setRole(data.role as Role);
-      setToken(localStorage.getItem('token'));
+  const init = async (): Promise<void> => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      return;
     }
-    catch {
-      logout();
+
+    try {
+      const me = await apiClient.get<MeResponse>('/api/auth/me');
+      setUser({ id: me.id, email: me.email, displayName: me.displayName });
+      setRole(me.role);
+    } catch (error) {
+      if (error instanceof ApiError || error instanceof TypeError) {
+        logout();
+      }
     }
   };
 
   useEffect(() => {
-    const savedToken = localStorage.getItem('token');
-    if (savedToken) init();
+    init().finally(() => setIsInitialized(true));
   }, []);
 
-  const login = async (newToken: string) => {
-    localStorage.setItem('token', newToken);
-    await init(); // Загружаем профиль сразу после логина
-  };
-
-  const register = async (displayName: string, email: string, password: string) => {
-    
-    const data = await apiClient.post<any>('/api/auth/register', { 
-      displayName, 
-      email, 
-      password 
+  const login = async (email: string, password: string): Promise<void> => {
+    const { accessToken } = await apiClient.post<TokenResponse>('/api/auth/login', {
+      email,
+      password,
     });
-
-    // Получаем токен из очищенных данных
-    const newToken = data.accessToken || data.token;
-    
-    if (newToken) {
-      await login(newToken);
-    }
+    localStorage.setItem('token', accessToken);
+    await init();
   };
 
-  const logout = () => {
-    localStorage.removeItem('token');
-    setToken(null);
-    setUser(null);
-    setRole(null);
+  const register = async (
+    displayName: string,
+    email: string,
+    password: string,
+  ): Promise<void> => {
+    const { accessToken } = await apiClient.post<TokenResponse>('/api/auth/register', {
+      displayName,
+      email,
+      password,
+    });
+    localStorage.setItem('token', accessToken);
+    await init();
   };
-  
+
+  if (!isInitialized) {
+    return <PageLoading />;
+  }
+
   return (
-    <AuthContext.Provider value={{ user, role, isAuthenticated: !!token && !!role, login, logout, register}}>
+    <AuthContext.Provider
+      value={{
+        user,
+        role,
+        isAuthenticated: Boolean(user),
+        login,
+        register,
+        logout,
+        init,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   );
 }
 
-export const useAuth = () => {
+export function useAuth(): AuthContextValue {
   const ctx = useContext(AuthContext);
-  if (!ctx) throw new Error('useAuth must be used within AuthProvider');
+  if (!ctx) {
+    throw new Error('useAuth must be used within AuthProvider');
+  }
   return ctx;
-};
+}

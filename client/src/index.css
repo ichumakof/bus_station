@@ -1,0 +1,104 @@
+:root {
+  color: #31161c;
+  background: #f7f0f0;
+  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+body {
+  margin: 0;
+  background:
+    linear-gradient(180deg, rgba(122, 31, 43, 0.08), rgba(122, 31, 43, 0.02)),
+    #f7f0f0;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.ant-layout {
+  background: transparent;
+}
+
+.ant-layout-sider,
+.ant-layout-content {
+  box-shadow: 0 10px 30px rgba(122, 31, 43, 0.08);
+}
+
+.ant-menu-item {
+  font-size: 15px;
+  font-weight: 600;
+}
+
+.ant-typography,
+.ant-card,
+.ant-table,
+.ant-form-item-label > label,
+.ant-btn,
+.ant-select,
+.ant-input,
+.ant-input-number,
+.ant-picker,
+.ant-statistic {
+  font-size: 15px;
+}
+
+.ant-typography h1,
+.ant-typography h2,
+.ant-typography h3,
+.ant-typography h4,
+.ant-typography h5,
+.ant-typography h6,
+.ant-typography-title {
+  color: #5f1725;
+  font-weight: 700 !important;
+}
+
+.ant-card {
+  border-color: rgba(122, 31, 43, 0.18);
+}
+
+.ant-card .ant-typography.ant-typography-secondary {
+  font-weight: 600;
+}
+
+.ant-btn {
+  font-weight: 600;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th {
+  background: #7a1f2b !important;
+  color: #fff !important;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th:first-child,
+.ant-table-wrapper .ant-table-tbody > tr > td:first-child {
+  text-align: left;
+}
+
+.ant-table-wrapper .ant-table-thead > tr > th:not(:first-child),
+.ant-table-wrapper .ant-table-tbody > tr > td:not(:first-child) {
+  text-align: center;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr > td {
+  background: #fff;
+  font-size: 15px;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:nth-child(even) > td {
+  background: rgba(122, 31, 43, 0.12) !important;
+}
+
+.ant-table-wrapper .ant-table-tbody > tr:hover > td {
+  background: rgba(122, 31, 43, 0.18) !important;
+}
+
+.ant-modal .ant-modal-title,
+.ant-drawer .ant-drawer-title {
+  color: #5f1725;
+  font-weight: 700;
+}

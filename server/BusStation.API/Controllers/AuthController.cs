@@ -1,8 +1,8 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using ServiceDesk.API.Application.Services;
 using ServiceDesk.API.DTOs.Auth;
-using ServiceDesk.API.Services;
 
 namespace ServiceDesk.API.Controllers;
 

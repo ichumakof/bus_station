@@ -5,6 +5,7 @@ import { ConfigProvider } from 'antd';
 import App from './App';
 import { AuthProvider } from './contexts/AuthContext';
 import 'antd/dist/reset.css';
+import './index.css';
 
 const queryClient = new QueryClient();
 
@@ -15,7 +16,10 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
         theme={{
           token: {
             colorPrimary: '#800020',
-            borderRadius: 6,
+            colorLink: '#800020',
+            borderRadius: 8,
+            fontSize: 15,
+            controlHeight: 38,
           },
         }}
       >

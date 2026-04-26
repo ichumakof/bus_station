@@ -1,29 +1,30 @@
-# Автовокзал - Иваново (учебный проект)
+# Автовокзал Иваново
 
-Этот репозиторий содержит учебный проект Автовокзал - Иваново (лабораторные работы).
+Учебный проект по дисциплине "Конструирование интернет-приложений".
 
 ## Структура
-- `server/` — ASP.NET Core Web API + тесты
-- `client/` — React (Vite) frontend
+- `server` — ASP.NET Core Web API
+- `client` — React + Vite
 
-## Быстрый старт (после генерации кода лабами)
-### Backend
+## Запуск сервера
 ```bash
 cd server
-dotnet restore
-dotnet test
-dotnet run --project ServiceDesk.API
+cd BusStation.API
+dotnet run
 ```
 
-### Frontend
+Сервер запускается по адресу `http://localhost:5051`.
+
+## Запуск клиента
 ```bash
 cd client
-npm i
 npm run dev
 ```
 
-## Переменные окружения
-Скопируйте `.env.example` в `.env` и заполните значения по комментариям.
+Клиент использует адрес API из файла `.env`.
 
-## Документация по лабам
-См. `docs/README.md`.
+## Тестовые пользователи
+- `admin@demo.com` / `Admin123!`
+- `operator1@demo.com` / `Operator123!`
+- `customer1@demo.com` / `Customer123!`
+- `customer2@demo.com` / `Customer123!`

@@ -7,10 +7,10 @@ export default function PageNotFound() {
     <Result
       status="404"
       title="404"
-      subTitle="The page you are looking for does not exist."
+      subTitle="Страница не найдена."
       extra={
         <Button type="primary" onClick={() => navigate(-1)}>
-          Go Back
+          Назад
         </Button>
       }
     />

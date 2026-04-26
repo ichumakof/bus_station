@@ -1,27 +1,27 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter, Route, Routes } from 'react-router-dom';
+import { RootRedirect } from './app/RootRedirect';
 import AppLayout from './components/AppLayout';
+import PageNotFound from './components/PageNotFound';
 import { RequireAuth } from './components/RequireAuth';
 import { RequireRole } from './components/RequireRole';
-import LoginPage from './pages/public/LoginPage';
-import RegisterPage from './pages/public/RegisterPage';
-import TripsPage from './pages/customer/TripsPage';
-import MyTicketsPage from './pages/customer/MyTicketsPage';
-import RoutesPage from './pages/operator/RoutesPage';
-import EditTripsPage from './pages/operator/EditTripsPage';
-import SalesReportPage from './pages/admin/SalesReportPage';
+import { SalesReportPage } from './pages/admin/SalesReportPage';
 import UsersPage from './pages/admin/UsersPage';
-import PageNotFound from './components/PageNotFound';
+import MyTicketsPage from './pages/customer/MyTicketsPage';
+import TripsPage from './pages/customer/TripsPage';
+import ForbiddenPage from './pages/ForbiddenPage';
+import LoginPage from './pages/LoginPage';
+import RegisterPage from './pages/RegisterPage';
 import TripDetailPage from './pages/TripDetailPage';
+import EditTripsPage from './pages/operator/EditTripsPage';
+import RoutesPage from './pages/operator/RoutesPage';
 
 export default function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
 
-        {/* Private */}
         <Route
           element={
             <RequireAuth>
@@ -29,7 +29,6 @@ export default function App() {
             </RequireAuth>
           }
         >
-          {/* Customer */}
           <Route
             path="/trips"
             element={
@@ -46,8 +45,6 @@ export default function App() {
               </RequireRole>
             }
           />
-
-          {/* Operator */}
           <Route
             path="/manage/routes"
             element={
@@ -64,21 +61,11 @@ export default function App() {
               </RequireRole>
             }
           />
-          {/* for Customer and Operator */}
           <Route
             path="/trips/:id"
             element={
               <RequireRole roles={['Customer', 'Operator']}>
                 <TripDetailPage />
-              </RequireRole>
-            }
-          />
-          {/* Admin */}
-          <Route
-            path="/admin/sales-report"
-            element={
-              <RequireRole roles={['Admin']}>
-                <SalesReportPage />
               </RequireRole>
             }
           />
@@ -90,10 +77,18 @@ export default function App() {
               </RequireRole>
             }
           />
+          <Route
+            path="/admin/sales-report"
+            element={
+              <RequireRole roles={['Admin']}>
+                <SalesReportPage />
+              </RequireRole>
+            }
+          />
+          <Route path="/forbidden" element={<ForbiddenPage />} />
         </Route>
 
-        {/* Default redirect */}
-        <Route path="/" element={<Navigate to="/trips" replace />} />
+        <Route path="/" element={<RootRedirect />} />
         <Route path="*" element={<PageNotFound />} />
       </Routes>
     </BrowserRouter>
