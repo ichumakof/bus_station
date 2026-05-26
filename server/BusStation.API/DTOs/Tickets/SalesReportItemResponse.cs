@@ -1,4 +1,4 @@
-namespace ServiceDesk.API.DTOs.Tickets;
+namespace BusStation.API.DTOs.Tickets;
 
 public record SalesReportItemResponse(
     int Id,

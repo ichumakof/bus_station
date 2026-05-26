@@ -1,3 +1,3 @@
-namespace ServiceDesk.API.DTOs.Auth;
+namespace BusStation.API.DTOs.Auth;
 
 public record AuthResponse(string AccessToken);

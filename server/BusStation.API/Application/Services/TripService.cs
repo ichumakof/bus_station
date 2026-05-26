@@ -1,20 +1,28 @@
+using BusStation.API.Application.Abstractions;
+using BusStation.API.Application.Abstractions.Repositories;
+using BusStation.API.Application.Mapping;
+using BusStation.API.Domain;
+using BusStation.API.DTOs;
+using BusStation.API.DTOs.Trips;
+using BusStation.API.Exceptions;
 using Microsoft.EntityFrameworkCore;
-using ServiceDesk.API.Application.Mapping;
-using ServiceDesk.API.DTOs;
-using ServiceDesk.API.DTOs.Trips;
-using ServiceDesk.API.Domain;
-using ServiceDesk.API.Exceptions;
-using ServiceDesk.API.Infrastructure.Data;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public class TripService : ITripService
 {
-    private readonly AppDbContext _db;
+    private readonly ITripRepository _tripRepository;
+    private readonly IRouteRepository _routeRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public TripService(AppDbContext db)
+    public TripService(
+        ITripRepository tripRepository,
+        IRouteRepository routeRepository,
+        IUnitOfWork unitOfWork)
     {
-        _db = db;
+        _tripRepository = tripRepository;
+        _routeRepository = routeRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<PagedResponse<TripResponse>> GetAllAsync(TripsQuery query, string role)
@@ -23,8 +31,9 @@ public class TripService : ITripService
         var pageSize = Math.Clamp(query.PageSize, 1, 100);
         var now = DateTimeOffset.Now;
 
-        var trips = BaseQuery();
+        var trips = _tripRepository.Query();
 
+        // Пассажиру показываются только активные будущие рейсы, доступные для покупки.
         if (role == "Customer")
         {
             trips = trips.Where(trip =>
@@ -73,7 +82,7 @@ public class TripService : ITripService
 
     public async Task<TripResponse> GetByIdAsync(int id, string role)
     {
-        var trip = await BaseQuery().FirstOrDefaultAsync(t => t.Id == id)
+        var trip = await _tripRepository.Query().FirstOrDefaultAsync(t => t.Id == id)
             ?? throw new NotFoundException("Рейс не найден.");
 
         if (role == "Customer" &&
@@ -87,7 +96,7 @@ public class TripService : ITripService
 
     public async Task<TripResponse> CreateAsync(CreateTripRequest request)
     {
-        var route = await _db.Routes.FirstOrDefaultAsync(route => route.Id == request.RouteId)
+        var route = await _routeRepository.GetByIdAsync(request.RouteId)
             ?? throw new BusinessException("Маршрут не найден.");
 
         if (!Enum.TryParse<TripStatus>(request.Status, true, out var status))
@@ -106,20 +115,18 @@ public class TripService : ITripService
             Status = status
         };
 
-        _db.Trips.Add(trip);
-        await _db.SaveChangesAsync();
+        await _tripRepository.AddAsync(trip);
+        await _unitOfWork.SaveChangesAsync();
 
         return await GetByIdAsync(trip.Id, "Operator");
     }
 
     public async Task<TripResponse> UpdateAsync(int id, UpdateTripRequest request)
     {
-        var trip = await _db.Trips
-            .Include(item => item.Tickets)
-            .FirstOrDefaultAsync(item => item.Id == id)
+        var trip = await _tripRepository.GetByIdWithTicketsAsync(id)
             ?? throw new NotFoundException("Рейс не найден.");
 
-        var route = await _db.Routes.FirstOrDefaultAsync(item => item.Id == request.RouteId)
+        var route = await _routeRepository.GetByIdAsync(request.RouteId)
             ?? throw new BusinessException("Маршрут не найден.");
 
         if (!Enum.TryParse<TripStatus>(request.Status, true, out var status))
@@ -127,6 +134,7 @@ public class TripService : ITripService
             throw new BusinessException("Некорректный статус рейса.");
         }
 
+        // Оператор не может уменьшить общее число мест ниже количества уже проданных билетов.
         var bookedCount = trip.Tickets.Count(ticket => ticket.Status == TicketStatus.Booked);
         if (request.TotalSeats < bookedCount)
         {
@@ -141,13 +149,8 @@ public class TripService : ITripService
         trip.FreeSeats = request.TotalSeats - bookedCount;
         trip.Status = status;
 
-        await _db.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
 
         return await GetByIdAsync(trip.Id, "Operator");
     }
-
-    private IQueryable<Trip> BaseQuery() =>
-        _db.Trips
-            .Include(trip => trip.Route)
-            .AsNoTracking();
 }

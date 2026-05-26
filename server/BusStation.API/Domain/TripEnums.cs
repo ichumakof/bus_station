@@ -1,4 +1,4 @@
-namespace ServiceDesk.API.Domain;
+namespace BusStation.API.Domain;
 
 public enum TripStatus
 {

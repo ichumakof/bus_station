@@ -1,5 +1,5 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ServiceDesk.API.DTOs.Users;
+namespace BusStation.API.DTOs.Users;
 
 public record UpdateUserRoleRequest([Required] string Role);

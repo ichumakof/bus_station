@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ServiceDesk.API.DTOs.Trips;
+namespace BusStation.API.DTOs.Trips;
 
 public record UpdateTripRequest(
     [Range(1, int.MaxValue)] int RouteId,

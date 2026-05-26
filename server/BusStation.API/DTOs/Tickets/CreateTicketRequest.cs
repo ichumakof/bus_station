@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ServiceDesk.API.DTOs.Tickets;
+namespace BusStation.API.DTOs.Tickets;
 
 public record CreateTicketRequest(
     [Range(1, int.MaxValue)] int TripId,

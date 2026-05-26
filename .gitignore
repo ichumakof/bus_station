@@ -2,6 +2,7 @@
 bin/
 obj/
 *.user
+*.csproj.user
 *.suo
 *.userosscache
 *.sln.docstates
@@ -16,3 +17,10 @@ yarn-error.log*
 
 # Env
 .env
+
+# IDE and local tool caches
+.vs/
+.appdata/
+.dotnet/
+.nuget/
+.userprofile/

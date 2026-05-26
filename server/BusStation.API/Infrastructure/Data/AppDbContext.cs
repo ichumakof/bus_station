@@ -1,8 +1,8 @@
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
-using ServiceDesk.API.Domain;
+using BusStation.API.Domain;
 
-namespace ServiceDesk.API.Infrastructure.Data;
+namespace BusStation.API.Infrastructure.Data;
 
 public class AppDbContext : IdentityDbContext<ApplicationUser>
 {
@@ -18,6 +18,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
     {
         base.OnModelCreating(builder);
 
+        // Здесь описываются ключи, ограничения и связи между сущностями базы данных.
         builder.Entity<BusRoute>(e =>
         {
             e.HasKey(route => route.Id);
@@ -30,6 +31,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
         {
             e.HasKey(trip => trip.Id);
             e.Property(trip => trip.Price).HasPrecision(10, 2);
+            // Один маршрут может иметь много рейсов, но удаление маршрута не должно автоматически удалять рейсы.
             e.HasOne(trip => trip.Route)
                 .WithMany(route => route.Trips)
                 .HasForeignKey(trip => trip.RouteId)
@@ -43,6 +45,7 @@ public class AppDbContext : IdentityDbContext<ApplicationUser>
             e.HasKey(ticket => ticket.Id);
             e.Property(ticket => ticket.PassengerName).IsRequired().HasMaxLength(100);
             e.Property(ticket => ticket.Price).HasPrecision(10, 2);
+            // Билет связан и с рейсом, и с пользователем, поэтому обе связи задаются явно.
             e.HasOne(ticket => ticket.Trip)
                 .WithMany(trip => trip.Tickets)
                 .HasForeignKey(ticket => ticket.TripId)

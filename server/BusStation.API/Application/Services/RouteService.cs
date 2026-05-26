@@ -1,25 +1,28 @@
+using BusStation.API.Application.Abstractions;
+using BusStation.API.Application.Abstractions.Repositories;
+using BusStation.API.Application.Mapping;
+using BusStation.API.Domain;
+using BusStation.API.DTOs.Routes;
+using BusStation.API.Exceptions;
+using BusStation.API.Infrastructure.Seed;
 using Microsoft.EntityFrameworkCore;
-using ServiceDesk.API.Application.Mapping;
-using ServiceDesk.API.DTOs.Routes;
-using ServiceDesk.API.Exceptions;
-using ServiceDesk.API.Infrastructure.Data;
-using ServiceDesk.API.Infrastructure.Seed;
-using ServiceDesk.API.Domain;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public class RouteService : IRouteService
 {
-    private readonly AppDbContext _db;
+    private readonly IRouteRepository _routeRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public RouteService(AppDbContext db)
+    public RouteService(IRouteRepository routeRepository, IUnitOfWork unitOfWork)
     {
-        _db = db;
+        _routeRepository = routeRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<RouteResponse>> GetAllAsync(bool includeInactive, bool canViewInactive)
     {
-        IQueryable<BusRoute> query = _db.Routes.AsNoTracking();
+        IQueryable<BusRoute> query = _routeRepository.Query();
 
         if (!canViewInactive || !includeInactive)
         {
@@ -46,23 +49,21 @@ public class RouteService : IRouteService
 
         Validate(route);
 
-        var exists = await _db.Routes.AnyAsync(r =>
-            r.DepartureCity == route.DepartureCity &&
-            r.ArrivalCity == route.ArrivalCity);
+        var exists = await _routeRepository.ExistsByCitiesAsync(route.DepartureCity, route.ArrivalCity);
         if (exists)
         {
             throw new BusinessException("Такой маршрут уже существует.");
         }
 
-        _db.Routes.Add(route);
-        await _db.SaveChangesAsync();
+        await _routeRepository.AddAsync(route);
+        await _unitOfWork.SaveChangesAsync();
 
         return route.ToResponse();
     }
 
     public async Task<RouteResponse> UpdateAsync(int id, UpdateRouteRequest request)
     {
-        var route = await _db.Routes.FindAsync(id)
+        var route = await _routeRepository.GetByIdAsync(id)
             ?? throw new NotFoundException("Маршрут не найден.");
 
         route.DepartureCity = Normalize(request.DepartureCity);
@@ -72,16 +73,16 @@ public class RouteService : IRouteService
 
         Validate(route);
 
-        var exists = await _db.Routes.AnyAsync(r =>
-            r.Id != route.Id &&
-            r.DepartureCity == route.DepartureCity &&
-            r.ArrivalCity == route.ArrivalCity);
+        var exists = await _routeRepository.ExistsByCitiesAsync(
+            route.DepartureCity,
+            route.ArrivalCity,
+            route.Id);
         if (exists)
         {
             throw new BusinessException("Такой маршрут уже существует.");
         }
 
-        await _db.SaveChangesAsync();
+        await _unitOfWork.SaveChangesAsync();
         return route.ToResponse();
     }
 

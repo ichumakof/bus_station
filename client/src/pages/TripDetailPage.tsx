@@ -21,6 +21,7 @@ export default function TripDetailPage() {
   const [messageApi, contextHolder] = message.useMessage();
   const [serverError, setServerError] = useState<string | null>(null);
 
+  // Страница всегда запрашивает актуальное состояние выбранного рейса по id из адреса.
   const { data: trip, isLoading, isError, error } = useQuery({
     queryKey: ['trip', id],
     queryFn: () => tripsApi.getById(Number(id)),
@@ -33,6 +34,7 @@ export default function TripDetailPage() {
     onSuccess: () => {
       void messageApi.success('Билет успешно куплен');
       setServerError(null);
+      // После покупки нужно обновить и сам рейс, и список билетов текущего пользователя.
       queryClient.invalidateQueries({ queryKey: ['trip', id] });
       queryClient.invalidateQueries({ queryKey: ['my-tickets'] });
     },
@@ -90,6 +92,7 @@ export default function TripDetailPage() {
           <Form
             layout="vertical"
             style={{ maxWidth: 420 }}
+            // onFinish вызывается только после того, как форма пройдет все правила валидации.
             onFinish={(values: { passengerName: string }) =>
               purchaseMutation.mutate(values.passengerName)
             }

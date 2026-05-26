@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServiceDesk.API.Application.Services;
-using ServiceDesk.API.DTOs.Tickets;
+using BusStation.API.Application.Services;
+using BusStation.API.DTOs.Tickets;
 
-namespace ServiceDesk.API.Controllers;
+namespace BusStation.API.Controllers;
 
 [ApiController]
 [Route("api/tickets")]
@@ -19,7 +19,7 @@ public class TicketsController : ControllerBase
         _ticketService = ticketService;
     }
 
-    /// <summary>Возвращает билеты текущего пассажира.</summary>
+    /// <summary>Возвращает билеты, купленные текущим пассажиром.</summary>
     [HttpGet("my")]
     [Authorize(Roles = "Customer")]
     [ProducesResponseType(typeof(IEnumerable<TicketResponse>), StatusCodes.Status200OK)]
@@ -29,7 +29,7 @@ public class TicketsController : ControllerBase
         return Ok(await _ticketService.GetMyAsync(userId));
     }
 
-    /// <summary>Покупает билет на рейс.</summary>
+    /// <summary>Покупает билет на выбранный рейс.</summary>
     [HttpPost]
     [Authorize(Roles = "Customer")]
     [ProducesResponseType(typeof(TicketResponse), StatusCodes.Status201Created)]
@@ -40,7 +40,7 @@ public class TicketsController : ControllerBase
         return CreatedAtAction(nameof(GetMy), new { id = result.Id }, result);
     }
 
-    /// <summary>Возвращает отчет по проданным билетам.</summary>
+    /// <summary>Возвращает отчет по продажам купленных билетов.</summary>
     [HttpGet("sales")]
     [Authorize(Roles = "Admin")]
     [ProducesResponseType(typeof(SalesReportResponse), StatusCodes.Status200OK)]

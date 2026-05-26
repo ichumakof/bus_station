@@ -1,7 +1,7 @@
-using ServiceDesk.API.Domain;
-using ServiceDesk.API.DTOs.Routes;
+using BusStation.API.Domain;
+using BusStation.API.DTOs.Routes;
 
-namespace ServiceDesk.API.Application.Mapping;
+namespace BusStation.API.Application.Mapping;
 
 public static class RouteMapping
 {

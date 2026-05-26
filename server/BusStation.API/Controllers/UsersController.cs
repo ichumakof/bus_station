@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServiceDesk.API.Application.Services;
-using ServiceDesk.API.DTOs.Users;
+using BusStation.API.Application.Services;
+using BusStation.API.DTOs.Users;
 
-namespace ServiceDesk.API.Controllers;
+namespace BusStation.API.Controllers;
 
 [ApiController]
 [Route("api/users")]
@@ -19,7 +19,7 @@ public class UsersController : ControllerBase
         _userAdminService = userAdminService;
     }
 
-    /// <summary>Возвращает всех пользователей с ролями.</summary>
+    /// <summary>Возвращает всех пользователей вместе с их текущими ролями.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<UserResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<UserResponse>>> GetAll()
@@ -36,7 +36,7 @@ public class UsersController : ControllerBase
         return CreatedAtAction(nameof(GetAll), new { id = result.Id }, result);
     }
 
-    /// <summary>Обновляет роль пользователя.</summary>
+    /// <summary>Обновляет роль, назначенную пользователю.</summary>
     [HttpPut("{id}/role")]
     [ProducesResponseType(typeof(UserResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<UserResponse>> UpdateRole(string id, [FromBody] UpdateUserRoleRequest request)
@@ -44,7 +44,7 @@ public class UsersController : ControllerBase
         return Ok(await _userAdminService.UpdateRoleAsync(id, request));
     }
 
-    /// <summary>Удаляет пользователя.</summary>
+    /// <summary>Удаляет пользователя и связанные с ним билеты.</summary>
     [HttpDelete("{id}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
     public async Task<IActionResult> Delete(string id)

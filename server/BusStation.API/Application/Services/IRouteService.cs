@@ -1,6 +1,6 @@
-using ServiceDesk.API.DTOs.Routes;
+using BusStation.API.DTOs.Routes;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public interface IRouteService
 {

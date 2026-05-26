@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ServiceDesk.API.Domain;
+namespace BusStation.API.Domain;
 
 public class Trip
 {

@@ -1,4 +1,4 @@
-namespace ServiceDesk.API.DTOs;
+namespace BusStation.API.DTOs;
 
 public record PagedResponse<T>(
     IEnumerable<T> Items,

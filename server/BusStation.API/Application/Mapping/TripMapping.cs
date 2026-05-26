@@ -1,8 +1,8 @@
-using ServiceDesk.API.Domain;
-using ServiceDesk.API.DTOs.Tickets;
-using ServiceDesk.API.DTOs.Trips;
+using BusStation.API.Domain;
+using BusStation.API.DTOs.Tickets;
+using BusStation.API.DTOs.Trips;
 
-namespace ServiceDesk.API.Application.Mapping;
+namespace BusStation.API.Application.Mapping;
 
 public static class TripMapping
 {

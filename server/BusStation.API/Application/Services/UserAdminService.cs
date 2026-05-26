@@ -1,24 +1,33 @@
+using BusStation.API.Application.Abstractions;
+using BusStation.API.Application.Abstractions.Repositories;
+using BusStation.API.Application.Mapping;
+using BusStation.API.Domain;
+using BusStation.API.DTOs.Users;
+using BusStation.API.Exceptions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using ServiceDesk.API.Application.Mapping;
-using ServiceDesk.API.Domain;
-using ServiceDesk.API.DTOs.Users;
-using ServiceDesk.API.Exceptions;
-using ServiceDesk.API.Infrastructure.Data;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public class UserAdminService : IUserAdminService
 {
     private static readonly HashSet<string> ValidRoles = ["Customer", "Operator", "Admin"];
 
     private readonly UserManager<ApplicationUser> _userManager;
-    private readonly AppDbContext _db;
+    private readonly ITicketRepository _ticketRepository;
+    private readonly ITripRepository _tripRepository;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public UserAdminService(UserManager<ApplicationUser> userManager, AppDbContext db)
+    public UserAdminService(
+        UserManager<ApplicationUser> userManager,
+        ITicketRepository ticketRepository,
+        ITripRepository tripRepository,
+        IUnitOfWork unitOfWork)
     {
         _userManager = userManager;
-        _db = db;
+        _ticketRepository = ticketRepository;
+        _tripRepository = tripRepository;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<IEnumerable<UserResponse>> GetAllAsync()
@@ -118,11 +127,9 @@ public class UserAdminService : IUserAdminService
             }
         }
 
-        await using var transaction = await _db.Database.BeginTransactionAsync();
+        await using var transaction = await _unitOfWork.BeginTransactionAsync();
 
-        var tickets = await _db.Tickets
-            .Where(ticket => ticket.UserId == userId)
-            .ToListAsync();
+        var tickets = await _ticketRepository.GetByUserIdAsync(userId);
 
         if (tickets.Count > 0)
         {
@@ -133,10 +140,7 @@ public class UserAdminService : IUserAdminService
 
             if (bookedByTrip.Count > 0)
             {
-                var tripIds = bookedByTrip.Keys.ToList();
-                var trips = await _db.Trips
-                    .Where(trip => tripIds.Contains(trip.Id))
-                    .ToDictionaryAsync(trip => trip.Id);
+                var trips = await _tripRepository.GetByIdsAsync(bookedByTrip.Keys);
 
                 foreach (var pair in bookedByTrip)
                 {
@@ -147,8 +151,8 @@ public class UserAdminService : IUserAdminService
                 }
             }
 
-            _db.Tickets.RemoveRange(tickets);
-            await _db.SaveChangesAsync();
+            _ticketRepository.RemoveRange(tickets);
+            await _unitOfWork.SaveChangesAsync();
         }
 
         if (currentRoles.Count > 0)

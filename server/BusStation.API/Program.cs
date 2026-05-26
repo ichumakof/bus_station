@@ -7,12 +7,16 @@ using Microsoft.Data.SqlClient;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
-using ServiceDesk.API.Application.Services;
-using ServiceDesk.API.Domain;
-using ServiceDesk.API.Infrastructure.Auth;
-using ServiceDesk.API.Infrastructure.Data;
-using ServiceDesk.API.Infrastructure.Seed;
-using ServiceDesk.API.Middleware;
+using BusStation.API.Application.Abstractions;
+using BusStation.API.Application.Abstractions.Repositories;
+using BusStation.API.Application.Services;
+using BusStation.API.Domain;
+using BusStation.API.Infrastructure.Auth;
+using BusStation.API.Infrastructure.DAL;
+using BusStation.API.Infrastructure.DAL.Repositories;
+using BusStation.API.Infrastructure.Data;
+using BusStation.API.Infrastructure.Seed;
+using BusStation.API.Middleware;
 
 JwtSecurityTokenHandler.DefaultInboundClaimTypeMap.Clear();
 
@@ -48,6 +52,7 @@ var jwtIssuer = builder.Configuration["Jwt:Issuer"]
 var jwtAudience = builder.Configuration["Jwt:Audience"]
     ?? throw new InvalidOperationException("Jwt:Audience is not configured.");
 
+// JWT — единый источник данных об авторизации для SPA, поэтому правила проверки токена задаются здесь.
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 .AddJwtBearer(options =>
 {
@@ -85,7 +90,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// Через DI контроллеры получают готовые сервисы и не создают зависимости вручную.
 builder.Services.AddScoped<ITokenService, TokenService>();
+builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+builder.Services.AddScoped<IRouteRepository, RouteRepository>();
+builder.Services.AddScoped<ITripRepository, TripRepository>();
+builder.Services.AddScoped<ITicketRepository, TicketRepository>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IRouteService, RouteService>();
 builder.Services.AddScoped<ITripService, TripService>();
@@ -145,6 +155,7 @@ using (var scope = app.Services.CreateScope())
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
     var logger = scope.ServiceProvider.GetRequiredService<ILoggerFactory>().CreateLogger("Startup");
 
+    // В разработке старую локальную схему можно пересоздать, затем применяются миграции и сидирование.
     if (app.Environment.IsDevelopment() && await HasLegacySchemaWithoutMigrationsAsync(connectionString))
     {
         logger.LogWarning("Legacy development database detected. Recreating database for the current schema.");
@@ -190,6 +201,7 @@ app.Use(async (context, next) =>
 {
     await next();
 
+    // Иногда ASP.NET Core возвращает пустой 403, поэтому приводим его к единому формату ProblemDetails.
     if (context.Response.StatusCode == StatusCodes.Status403Forbidden && !context.Response.HasStarted)
     {
         context.Response.ContentType = "application/problem+json";
@@ -207,6 +219,7 @@ app.Use(async (context, next) =>
 app.UseAuthentication();
 app.UseAuthorization();
 
+// После регистрации middleware и авторизации включаем маршруты контроллеров API.
 app.MapControllers();
 app.MapGet("/health", () => Results.Ok("Healthy"));
 

@@ -1,14 +1,14 @@
-namespace ServiceDesk.API.Infrastructure.Seed;
+namespace BusStation.API.Infrastructure.Seed;
 
 public static class BusStationCatalog
 {
     public static readonly string[] AllowedCities =
     [
-        "Иваново",
-        "Кинешма",
-        "Шуя",
-        "Юрьевец",
-        "Вичуга",
-        "Родники"
+        "РРІР°РЅРѕРІРѕ",
+        "РљРёРЅРµС€РјР°",
+        "РЁСѓСЏ",
+        "Р®СЂСЊРµРІРµС†",
+        "Р’РёС‡СѓРіР°",
+        "Р РѕРґРЅРёРєРё"
     ];
 }

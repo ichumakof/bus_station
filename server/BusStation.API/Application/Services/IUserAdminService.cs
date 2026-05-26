@@ -1,6 +1,6 @@
-using ServiceDesk.API.DTOs.Users;
+using BusStation.API.DTOs.Users;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public interface IUserAdminService
 {

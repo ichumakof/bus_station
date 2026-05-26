@@ -5,6 +5,8 @@
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <RestoreIgnoreFailedSources>true</RestoreIgnoreFailedSources>
+    <AssemblyName>BusStation.API</AssemblyName>
+    <RootNamespace>BusStation.API</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

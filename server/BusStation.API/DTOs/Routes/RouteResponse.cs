@@ -1,4 +1,4 @@
-namespace ServiceDesk.API.DTOs.Routes;
+namespace BusStation.API.DTOs.Routes;
 
 public record RouteResponse(
     int Id,

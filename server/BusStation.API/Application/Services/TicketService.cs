@@ -1,32 +1,40 @@
+using BusStation.API.Application.Abstractions;
+using BusStation.API.Application.Abstractions.Repositories;
+using BusStation.API.Application.Mapping;
+using BusStation.API.Domain;
+using BusStation.API.DTOs.Tickets;
+using BusStation.API.Exceptions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using ServiceDesk.API.Application.Mapping;
-using ServiceDesk.API.DTOs.Tickets;
-using ServiceDesk.API.Domain;
-using ServiceDesk.API.Exceptions;
-using ServiceDesk.API.Infrastructure.Data;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public class TicketService : ITicketService
 {
-    private readonly AppDbContext _db;
+    private readonly ITicketRepository _ticketRepository;
+    private readonly ITripRepository _tripRepository;
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly IUnitOfWork _unitOfWork;
     private readonly ILogger<TicketService> _logger;
 
     public TicketService(
-        AppDbContext db,
+        ITicketRepository ticketRepository,
+        ITripRepository tripRepository,
         UserManager<ApplicationUser> userManager,
+        IUnitOfWork unitOfWork,
         ILogger<TicketService> logger)
     {
-        _db = db;
+        _ticketRepository = ticketRepository;
+        _tripRepository = tripRepository;
         _userManager = userManager;
+        _unitOfWork = unitOfWork;
         _logger = logger;
     }
 
     public async Task<IEnumerable<TicketResponse>> GetMyAsync(string userId)
     {
-        var tickets = await BaseQuery()
+        // Клиент видит свои билеты в обратном хронологическом порядке.
+        var tickets = await _ticketRepository.Query()
             .Where(ticket => ticket.UserId == userId)
             .OrderByDescending(ticket => ticket.BookedAt)
             .ToListAsync();
@@ -42,10 +50,8 @@ public class TicketService : ITicketService
             throw new BusinessException("Имя пассажира обязательно.");
         }
 
-        var trip = await _db.Trips
-            .Include(item => item.Route)
-            .Include(item => item.Tickets)
-            .FirstOrDefaultAsync(item => item.Id == request.TripId)
+        // Рейс загружается вместе с билетами, потому что число мест и дубликаты проверяются как бизнес-правила.
+        var trip = await _tripRepository.GetByIdWithRouteAndTicketsAsync(request.TripId)
             ?? throw new NotFoundException("Рейс не найден.");
 
         if (!trip.Route.IsActive || trip.Status != TripStatus.Scheduled)
@@ -63,6 +69,7 @@ public class TicketService : ITicketService
             throw new BusinessException("Свободных мест больше нет.");
         }
 
+        // На одно имя нельзя оформить два активных билета на один и тот же рейс.
         var hasDuplicatePassenger = trip.Tickets.Any(ticket =>
             ticket.Status == TicketStatus.Booked &&
             string.Equals(ticket.PassengerName.Trim(), passengerName, StringComparison.OrdinalIgnoreCase));
@@ -75,6 +82,7 @@ public class TicketService : ITicketService
         var user = await _userManager.FindByIdAsync(userId)
             ?? throw new BusinessException("Пользователь не найден.");
 
+        // Номер места назначается следующим после уже занятых мест на этом рейсе.
         var seatNumber = trip.Tickets
             .Where(ticket => ticket.Status == TicketStatus.Booked)
             .Select(ticket => ticket.SeatNumber)
@@ -93,19 +101,20 @@ public class TicketService : ITicketService
         };
 
         trip.FreeSeats -= 1;
-        _db.Tickets.Add(ticket);
-
-        await _db.SaveChangesAsync();
+        await _ticketRepository.AddAsync(ticket);
+        await _unitOfWork.SaveChangesAsync();
 
         _logger.LogInformation("Ticket {TicketId} created for trip {TripId}", ticket.Id, trip.Id);
 
-        var created = await BaseQuery().FirstAsync(item => item.Id == ticket.Id);
+        var created = await _ticketRepository.GetByIdAsync(ticket.Id)
+            ?? throw new NotFoundException("Билет не найден.");
         return created.ToResponse();
     }
 
     public async Task<SalesReportResponse> GetSalesReportAsync(DateOnly? dateFrom, DateOnly? dateTo, int? routeId)
     {
-        var query = BaseQuery().Where(ticket => ticket.Status == TicketStatus.Booked);
+        // Отчет строится только по купленным билетам и затем сужается дополнительными фильтрами.
+        var query = _ticketRepository.Query().Where(ticket => ticket.Status == TicketStatus.Booked);
 
         if (dateFrom.HasValue)
         {
@@ -133,11 +142,4 @@ public class TicketService : ITicketService
             items.Sum(ticket => ticket.Price),
             items.Select(ticket => ticket.ToSalesResponse()));
     }
-
-    private IQueryable<Ticket> BaseQuery() =>
-        _db.Tickets
-            .Include(ticket => ticket.User)
-            .Include(ticket => ticket.Trip)
-            .ThenInclude(trip => trip.Route)
-            .AsNoTracking();
 }

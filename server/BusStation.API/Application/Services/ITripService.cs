@@ -1,7 +1,7 @@
-using ServiceDesk.API.DTOs;
-using ServiceDesk.API.DTOs.Trips;
+using BusStation.API.DTOs;
+using BusStation.API.DTOs.Trips;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public interface ITripService
 {

@@ -1,4 +1,4 @@
-namespace ServiceDesk.API.Exceptions;
+namespace BusStation.API.Exceptions;
 
 public class BusinessException : Exception
 {

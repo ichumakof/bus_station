@@ -1,6 +1,6 @@
-using ServiceDesk.API.DTOs.Routes;
+using BusStation.API.DTOs.Routes;
 
-namespace ServiceDesk.API.DTOs.Tickets;
+namespace BusStation.API.DTOs.Tickets;
 
 public record TicketTripResponse(
     int Id,

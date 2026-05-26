@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ServiceDesk.API.DTOs.Routes;
+namespace BusStation.API.DTOs.Routes;
 
 public record UpdateRouteRequest(
     [Required] string DepartureCity,

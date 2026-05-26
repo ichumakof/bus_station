@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServiceDesk.API.Application.Services;
-using ServiceDesk.API.DTOs.Routes;
+using BusStation.API.Application.Services;
+using BusStation.API.DTOs.Routes;
 
-namespace ServiceDesk.API.Controllers;
+namespace BusStation.API.Controllers;
 
 [ApiController]
 [Route("api/routes")]
@@ -19,7 +19,7 @@ public class RoutesController : ControllerBase
         _routeService = routeService;
     }
 
-    /// <summary>Возвращает маршруты автовокзала.</summary>
+    /// <summary>Возвращает маршруты, при необходимости включая неактивные для привилегированных ролей.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(IEnumerable<RouteResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<IEnumerable<RouteResponse>>> GetAll([FromQuery] bool includeInactive = false)
@@ -29,7 +29,7 @@ public class RoutesController : ControllerBase
         return Ok(await _routeService.GetAllAsync(includeInactive, canViewInactive));
     }
 
-    /// <summary>Создает маршрут. Доступно оператору.</summary>
+    /// <summary>Создает новый маршрут. Доступно только оператору.</summary>
     [HttpPost]
     [Authorize(Roles = "Operator")]
     [ProducesResponseType(typeof(RouteResponse), StatusCodes.Status201Created)]
@@ -39,7 +39,7 @@ public class RoutesController : ControllerBase
         return CreatedAtAction(nameof(GetAll), new { id = result.Id }, result);
     }
 
-    /// <summary>Изменяет маршрут. Доступно оператору.</summary>
+    /// <summary>Обновляет существующий маршрут. Доступно только оператору.</summary>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Operator")]
     [ProducesResponseType(typeof(RouteResponse), StatusCodes.Status200OK)]

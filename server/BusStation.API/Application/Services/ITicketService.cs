@@ -1,6 +1,6 @@
-using ServiceDesk.API.DTOs.Tickets;
+using BusStation.API.DTOs.Tickets;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public interface ITicketService
 {

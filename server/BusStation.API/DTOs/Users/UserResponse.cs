@@ -1,4 +1,4 @@
-namespace ServiceDesk.API.DTOs.Users;
+namespace BusStation.API.DTOs.Users;
 
 public record UserResponse(
     string Id,

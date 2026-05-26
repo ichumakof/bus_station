@@ -1,6 +1,6 @@
-using ServiceDesk.API.Domain;
+using BusStation.API.Domain;
 
-namespace ServiceDesk.API.Infrastructure.Auth;
+namespace BusStation.API.Infrastructure.Auth;
 
 public interface ITokenService
 {

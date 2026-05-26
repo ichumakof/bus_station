@@ -1,4 +1,4 @@
-namespace ServiceDesk.API.DTOs.Trips;
+namespace BusStation.API.DTOs.Trips;
 
 public record TripsQuery(
     string? FromCity,

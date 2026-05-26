@@ -1,8 +1,8 @@
 using System.Net;
 using Microsoft.AspNetCore.Mvc;
-using ServiceDesk.API.Exceptions;
+using BusStation.API.Exceptions;
 
-namespace ServiceDesk.API.Middleware;
+namespace BusStation.API.Middleware;
 
 public class ExceptionMiddleware
 {

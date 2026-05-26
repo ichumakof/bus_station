@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
-namespace ServiceDesk.API.Migrations
+namespace BusStation.API.Migrations
 {
     /// <inheritdoc />
     public partial class InitialLab4 : Migration

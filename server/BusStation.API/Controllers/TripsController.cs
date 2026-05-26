@@ -1,11 +1,11 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServiceDesk.API.Application.Services;
-using ServiceDesk.API.DTOs;
-using ServiceDesk.API.DTOs.Trips;
+using BusStation.API.Application.Services;
+using BusStation.API.DTOs;
+using BusStation.API.DTOs.Trips;
 
-namespace ServiceDesk.API.Controllers;
+namespace BusStation.API.Controllers;
 
 [ApiController]
 [Route("api/trips")]
@@ -20,7 +20,7 @@ public class TripsController : ControllerBase
         _tripService = tripService;
     }
 
-    /// <summary>Возвращает список рейсов с фильтрами.</summary>
+    /// <summary>Возвращает рейсы с фильтрацией и пагинацией.</summary>
     [HttpGet]
     [ProducesResponseType(typeof(PagedResponse<TripResponse>), StatusCodes.Status200OK)]
     public async Task<ActionResult<PagedResponse<TripResponse>>> GetAll(
@@ -32,12 +32,13 @@ public class TripsController : ControllerBase
         [FromQuery] int page = 1,
         [FromQuery] int pageSize = 20)
     {
+        // Роль передается в сервис, чтобы скрыть от пассажира недоступные или неактивные рейсы.
         var role = User.FindFirstValue("role") ?? string.Empty;
         var query = new TripsQuery(fromCity, toCity, date, routeId, status, page, pageSize);
         return Ok(await _tripService.GetAllAsync(query, role));
     }
 
-    /// <summary>Возвращает рейс по идентификатору.</summary>
+    /// <summary>Возвращает рейс по его идентификатору.</summary>
     [HttpGet("{id:int}")]
     [ProducesResponseType(typeof(TripResponse), StatusCodes.Status200OK)]
     public async Task<ActionResult<TripResponse>> GetById(int id)
@@ -46,7 +47,7 @@ public class TripsController : ControllerBase
         return Ok(await _tripService.GetByIdAsync(id, role));
     }
 
-    /// <summary>Создает рейс. Доступно оператору.</summary>
+    /// <summary>Создает рейс. Доступно только оператору.</summary>
     [HttpPost]
     [Authorize(Roles = "Operator")]
     [ProducesResponseType(typeof(TripResponse), StatusCodes.Status201Created)]
@@ -56,7 +57,7 @@ public class TripsController : ControllerBase
         return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
-    /// <summary>Изменяет рейс. Доступно оператору.</summary>
+    /// <summary>Обновляет рейс. Доступно только оператору.</summary>
     [HttpPut("{id:int}")]
     [Authorize(Roles = "Operator")]
     [ProducesResponseType(typeof(TripResponse), StatusCodes.Status200OK)]

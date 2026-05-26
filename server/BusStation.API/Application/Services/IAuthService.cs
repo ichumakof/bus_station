@@ -1,6 +1,6 @@
-using ServiceDesk.API.DTOs.Auth;
+using BusStation.API.DTOs.Auth;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public interface IAuthService
 {

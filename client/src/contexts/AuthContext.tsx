@@ -35,17 +35,20 @@ interface AuthContextValue {
 const AuthContext = createContext<AuthContextValue | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  // Эти состояния образуют общий клиентский контекст авторизации для всего приложения.
   const [user, setUser] = useState<AuthUser | null>(null);
   const [role, setRole] = useState<Role | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
 
   const logout = () => {
+    // Выход очищает и сохраненный токен, и данные пользователя в памяти приложения.
     localStorage.removeItem('token');
     setUser(null);
     setRole(null);
   };
 
   const init = async (): Promise<void> => {
+    // Восстановление сессии выполняется только если токен уже лежит в localStorage.
     const token = localStorage.getItem('token');
     if (!token) {
       return;
@@ -63,6 +66,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
+    // При старте SPA пробуем восстановить текущего пользователя по сохраненному токену.
     init().finally(() => setIsInitialized(true));
   }, []);
 

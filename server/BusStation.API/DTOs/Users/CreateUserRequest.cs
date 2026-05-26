@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ServiceDesk.API.DTOs.Users;
+namespace BusStation.API.DTOs.Users;
 
 public record CreateUserRequest(
     [Required, EmailAddress] string Email,

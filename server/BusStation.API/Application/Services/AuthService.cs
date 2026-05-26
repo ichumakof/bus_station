@@ -1,10 +1,10 @@
 using Microsoft.AspNetCore.Identity;
-using ServiceDesk.API.Domain;
-using ServiceDesk.API.DTOs.Auth;
-using ServiceDesk.API.Exceptions;
-using ServiceDesk.API.Infrastructure.Auth;
+using BusStation.API.Domain;
+using BusStation.API.DTOs.Auth;
+using BusStation.API.Exceptions;
+using BusStation.API.Infrastructure.Auth;
 
-namespace ServiceDesk.API.Application.Services;
+namespace BusStation.API.Application.Services;
 
 public class AuthService : IAuthService
 {
@@ -27,7 +27,7 @@ public class AuthService : IAuthService
         var existingUser = await _userManager.FindByEmailAsync(request.Email);
         if (existingUser is not null)
         {
-            throw new BusinessException("Email is already registered.");
+            throw new BusinessException("Пользователь с таким email уже зарегистрирован.");
         }
 
         var user = new ApplicationUser
@@ -48,7 +48,7 @@ public class AuthService : IAuthService
         if (!roleResult.Succeeded)
         {
             _logger.LogError("Failed to assign Customer role to user {UserId}", user.Id);
-            throw new BusinessException("Failed to assign default role.");
+            throw new BusinessException("Не удалось назначить роль по умолчанию.");
         }
 
         var token = _tokenService.GenerateToken(user, "Customer");
@@ -62,7 +62,7 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByEmailAsync(request.Email);
         if (user is null || !await _userManager.CheckPasswordAsync(user, request.Password))
         {
-            throw new UnauthorizedException("Invalid email or password.");
+            throw new UnauthorizedException("Неверный email или пароль.");
         }
 
         var roles = await _userManager.GetRolesAsync(user);
@@ -79,7 +79,7 @@ public class AuthService : IAuthService
         var user = await _userManager.FindByIdAsync(userId);
         if (user is null)
         {
-            throw new UnauthorizedException("User not found.");
+            throw new UnauthorizedException("Пользователь не найден.");
         }
 
         var roles = await _userManager.GetRolesAsync(user);

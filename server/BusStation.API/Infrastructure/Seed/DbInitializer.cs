@@ -1,12 +1,13 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using ServiceDesk.API.Domain;
-using ServiceDesk.API.Infrastructure.Data;
+using BusStation.API.Domain;
+using BusStation.API.Infrastructure.Data;
 
-namespace ServiceDesk.API.Infrastructure.Seed;
+namespace BusStation.API.Infrastructure.Seed;
 
 public static class DbInitializer
 {
+    // Эти записи используются только для заполнения демонстрационной базы в режиме разработки.
     private record SeedUser(string Email, string Password, string DisplayName, string Role);
     private record RouteSeed(string DepartureCity, string ArrivalCity, int TravelMinutes);
 
@@ -148,6 +149,7 @@ public static class DbInitializer
 
         var newTrips = new List<Trip>();
 
+        // Демонстрационные рейсы покрывают несколько дней и разную частоту, чтобы фильтры и отчеты выглядели реалистично.
         for (var day = today; day <= endDate; day = day.AddDays(1))
         {
             AddTrips(newTrips, tripMap, routes["Иваново-Кинешма"], day, [7, 10, 13, 16, 19], 0, 650m);

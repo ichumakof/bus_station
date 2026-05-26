@@ -17,6 +17,7 @@ export class ApiError extends Error {
 }
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
+  // Все HTTP-запросы проходят через одну точку, чтобы токен и обработка ошибок работали одинаково.
   const token = localStorage.getItem('token');
 
   const headers: Record<string, string> = {
@@ -36,7 +37,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
       const problem: ProblemDetails = await response.json();
       message = problem.detail ?? problem.title ?? message;
     } catch {
-      // keep default message when response body is not JSON
+      // Если сервер не прислал JSON, оставляем стандартное сообщение по статусу.
     }
     throw new ApiError(response.status, message);
   }
@@ -46,6 +47,7 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   return response.json() as Promise<T>;
 }
 
+/** Собирает query string без пустых значений. */
 /** Собирает query string без пустых значений. */
 export function buildQuery(params: object): string {
   const qs = new URLSearchParams();
@@ -61,6 +63,7 @@ export function buildQuery(params: object): string {
 }
 
 export const apiClient = {
+  // Короткие типизированные обертки позволяют страницам думать о действиях, а не о деталях fetch.
   get: <T>(path: string) => request<T>(path),
   post: <T>(path: string, body?: unknown) =>
     request<T>(path, {

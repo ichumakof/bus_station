@@ -156,7 +156,7 @@ export default function UsersPage() {
       const values = await form.validateFields();
       createMutation.mutate(values);
     } catch {
-      // validation handled by antd
+      // Ошибки валидации уже будут показаны самой формой Ant Design.
     }
   };
 

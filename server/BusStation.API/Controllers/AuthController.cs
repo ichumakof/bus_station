@@ -1,10 +1,10 @@
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using ServiceDesk.API.Application.Services;
-using ServiceDesk.API.DTOs.Auth;
+using BusStation.API.Application.Services;
+using BusStation.API.DTOs.Auth;
 
-namespace ServiceDesk.API.Controllers;
+namespace BusStation.API.Controllers;
 
 [ApiController]
 [Route("api/auth")]
@@ -18,7 +18,7 @@ public class AuthController : ControllerBase
         _authService = authService;
     }
 
-    /// <summary>Register a new user and receive a JWT access token.</summary>
+    /// <summary>Регистрирует нового пользователя и возвращает JWT-токен доступа.</summary>
     [HttpPost("register")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -28,7 +28,7 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
 
-    /// <summary>Authenticate with email and password and receive a JWT access token.</summary>
+    /// <summary>Выполняет вход по email и паролю и возвращает JWT-токен доступа.</summary>
     [HttpPost("login")]
     [ProducesResponseType(typeof(AuthResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status400BadRequest)]
@@ -39,14 +39,14 @@ public class AuthController : ControllerBase
         return Ok(response);
     }
 
-    /// <summary>Get the currently authenticated user's profile.</summary>
+    /// <summary>Возвращает профиль текущего авторизованного пользователя.</summary>
     [HttpGet("me")]
     [Authorize]
     [ProducesResponseType(typeof(MeResponse), StatusCodes.Status200OK)]
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<MeResponse>> Me()
     {
-        // [Authorize] guarantees a valid JWT is present; sub is always set by TokenService.
+        // Атрибут [Authorize] гарантирует наличие валидного JWT, а claim sub заполняется в TokenService.
         var userId = User.FindFirstValue(ClaimTypes.NameIdentifier)
             ?? User.FindFirstValue("sub")
             ?? throw new InvalidOperationException("User ID claim is missing from a validated JWT.");

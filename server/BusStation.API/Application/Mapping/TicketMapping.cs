@@ -1,7 +1,7 @@
-using ServiceDesk.API.Domain;
-using ServiceDesk.API.DTOs.Tickets;
+using BusStation.API.Domain;
+using BusStation.API.DTOs.Tickets;
 
-namespace ServiceDesk.API.Application.Mapping;
+namespace BusStation.API.Application.Mapping;
 
 public static class TicketMapping
 {

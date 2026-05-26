@@ -1,6 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 
-namespace ServiceDesk.API.DTOs.Auth;
+namespace BusStation.API.DTOs.Auth;
 
 public record RegisterRequest(
     [Required, EmailAddress] string Email,

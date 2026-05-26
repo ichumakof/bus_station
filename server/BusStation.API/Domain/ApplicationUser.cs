@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Identity;
 
-namespace ServiceDesk.API.Domain;
+namespace BusStation.API.Domain;
 
 public class ApplicationUser : IdentityUser
 {
